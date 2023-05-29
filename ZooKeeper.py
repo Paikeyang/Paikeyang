@@ -20,10 +20,7 @@ class ZooKeeper():
                 name_num, block_num = j // 10, j % 10
                 name_num_copy, block_num_copy = hdfs.NameNode('check')
 
-                if os.path.exists('./server/NameNode' + str(name_num_copy)) == False:
-                    os.makedirs('./server/NameNode' + str(name_num_copy))
-                if os.path.exists('./server/NameNode' + str(name_num_copy) + '/' + str(block_num_copy)) == False:
-                    os.makedirs('./server/NameNode' + str(name_num_copy) + '/' + str(block_num_copy))
+                hdfs.make_dirs(name_num_copy, block_num_copy)
 
                 file = ''
                 for _, _, k in os.walk('./server/NameNode' + str(name_num) + '/' + str(block_num)):
@@ -33,19 +30,13 @@ class ZooKeeper():
                                 './server/NameNode' + str(name_num_copy) + '/' + str(block_num_copy) + '/'
                                 + file_name_copy + file[-4:])
 
-                if file_name_copy not in self.namenode_dict_copy.keys():
-                    self.namenode_dict_copy[file_name_copy] = [int(str(name_num_copy) + str(block_num_copy))]
-                elif int(str(name_num_copy) + str(block_num_copy)) not in self.namenode_dict_copy[file_name_copy]:
-                    self.namenode_dict_copy[file_name_copy].append(int(str(name_num_copy) + str(block_num_copy)))
+                self.namenode_dict_copy = hdfs.update_namenode_dict(file_name_copy, self.namenode_dict_copy,
+                                                                    name_num_copy, block_num_copy)
 
-        namenode_copy_json = json.dumps(self.namenode_dict_copy)
-        f = open('namenode_copy.json', 'w')
-        f.write(namenode_copy_json)
+        hdfs.json_write('namenode_copy.json', self.namenode_dict_copy)
 
     def shift(self):
-        namenode_copy_json = json.dumps(self.namenode_dict_copy)
-        f = open('namenode.json', 'w')
-        f.write(namenode_copy_json)
+        hdfs.json_write('namenode.json', self.namenode_dict_copy)
         return self.namenode_dict_copy
 
 zookeeper = ZooKeeper()
